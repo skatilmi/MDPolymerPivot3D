@@ -1,47 +1,45 @@
+from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 import numpy as np
 import random
+import glob
 import sys
 from mpl_toolkits.mplot3d import Axes3D
-MC_x = [0, -1, -1, -1, -2, -2, -3, -3, -3, -3, -3, -3, -3, -3, -3, -2, -2, -2, -2, -3, -3, -2, -2, -2, -2, -3, -4, -4, -3, -3, -2, -2, -2, -1, 0, 0, -1, -1, 0, 0, 0, 0, -1, -1, -1, -1, -1, 0, 0, 0, 1, 1, 2, 2, 1, 1, 2, 3, 3, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 3, 3, 2, 2, 1, 1, 2, 3, 3, 3, 4, 4, 4, 5, 5, 6, 6, 7, 7, 7, 6, 6, 6, 6, 5, 5, 4, 4, 3, 3, 3, 3, 3, 3, 4, 5, 6, 7, 7, 6, 6, 6, 6, 5, 4, 3, 3, 2, 2, 2, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, -1, -1, -1, -1, -1, -1, 0, 1, 1, 1, 1, 2, 3, 3, 2, 2, 1, 1, 2, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 7, 8, 9, 9, 8, 8, 9, 10, 10, 10, 10, 9, 9, 9, 9, 9,
-        8, 8, 9, 10, 10, 11, 11, 11, 11, 11, 11, 12, 12, 11, 10, 10, 10, 9, 9, 9, 9, 9, 9, 9, 10, 10, 10, 11, 11, 10, 10, 10, 11, 11, 11, 12, 13, 13, 13, 13, 13, 13, 12, 12, 12, 12, 11, 11, 11, 11, 12, 12, 12, 11, 11, 11, 11, 11, 12, 12, 12, 12, 12, 11, 11, 11, 10, 10, 9, 9, 9, 9, 9, 9, 9, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 9, 9, 9, 10, 10, 10, 10, 10, 10, 10, 10, 9, 9, 8, 8, 8, 8, 7, 7, 7, 8, 9, 9, 10, 10, 10,
-        10, 11, 11, 10, 10, 11, 11, 12, 12, 12, 12, 12, 11, 11, 11, 11, 10, 10, 10, 11, 11, 11, 11, 11, 10, 10, 9, 9, 8, 8, 9, 9, 9, 9, 10, 10, 10, 10, 11, 12, 12, 12, 12, 12, 12, 12, 12, 13, 14, 14, 15, 15, 15, 15, 15, 15, 16, 16, 16, 17, 17, 17, 16, 16, 16, 15, 15, 16, 17, 17, 17, 17, 16, 16, 16, 15, 15, 15, 15, 14, 14, 13, 13, 13, 14, 14, 14, 13, 13, 13, 13, 13, 13, 13, 13, 13, 12, 12, 12, 12, 12, 12, 12, 12, 13, 13, 12, 12, 11, 11, 11, 11, 11, 11, 11, 12, 12]
-MC_y = [0, 0, -1, -2, -2, -3, -3, -2, -1, -1, -2, -3, -3, -3, -2, -2, -1, -1, 0, 0, 0, 0, 1, 1, 2, 2, 2, 3, 3, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 2, 1, 1, 1, 2, 2, 2, 3, 3, 4, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 5, 4, 4, 4, 5, 5, 5, 6, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 10, 10, 10, 10, 9, 9, 9, 9, 9, 8, 8, 9, 9, 10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 12, 12, 12, 12, 12, 11, 11, 12,
-        12, 12, 12, 12, 11, 10, 9, 9, 8, 8, 7, 7, 6, 5, 5, 5, 6, 6, 6, 6, 6, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 7, 7, 6, 6, 6, 6, 6, 5, 4, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 4, 4, 4, 4, 5, 6, 6, 5, 5, 5,
-        5, 5, 6, 6, 5, 4, 4, 3, 3, 3, 3, 3, 3, 2, 1, 1, 0, 0, 1, 2, 2, 1, 1, 0, 0, 0, 1, 1, 2, 2, 2, 1, 0, 0, 0, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 0, 0, 0, -1, -1, -1, -1, -2, -3, -4, -4, -4, -4, -4, -4, -3, -3, -3, -2, -2, -2, -2, -2, -2, -2, -1, -1, -1, -1, -2, -2, -3, -3, -4, -4, -4, -4, -3, -2, -1, -1, 0, 0, -1, -1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 4, 4, 4, 5, 5, 6, 6, 5, 5, 5, 5, 4, 4, 4, 3, 3, 2, 2, 2, 3, 3, 4, 4, 4, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 3, 3, 4, 5, 6, 6, 6, 6, 6, 7, 7, 8, 8, 8, 8, 8, 8, 8, 7, 7, 7, 7, 6, 6, 6, 6, 6, 5, 4, 4, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 3, 4, 4, 4, 5, 5, 5, 4, 4, 3, 3, 3, 3, 3, 3, 3, 4, 5, 6, 6, 6, 6, 5, 5, 6, 6, 5, 4, 4, 4, 4, 4]
-MC_z = [0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -1, -1, -2, -3, -3, -3, -3, -2, -2, -2, -3, -3, -3, -4, -4, -4, -4, -4, -4, -4, -4, -3, -3, -3, -3, -4, -4, -5, -5, -5, -5, -4, -4, -4, -5, -6, -6, -6, -6, -6, -6, -7, -7, -7, -7, -6, -6, -6, -5, -5, -4, -3, -3, -3, -3, -2, -1, -1, -1, -2, -2, -2, -2, -3, -3, -4, -4, -4, -4, -4, -3, -2, -2, -3, -3, -3, -2, -2, -1, -1, -1, -2, -2, -3, -3, -4, -4, -5, -5, -5, -5, -5, -6, -6, -7, -8, -8, -8, -8, -8, -8, -8, -7, -7, -6, -6, -6, -6, -6, -6, -6, -5, -5, -6, -6, -6, -6, -6, -6, -6, -6, -6, -6, -6, -6, -5, -4, -4, -4, -4, -3, -2, -2, -2, -2, -2, -2, -1, -1, 0, 0, 0, 0, -1, -1, -1, 0, 1, 1, 1, 1, 1, 2, 2, 3, 4, 4, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 3, 4, 4, 4, 4, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 3, 3, 2, 2, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5,
-        5, 5, 4, 4, 5, 6, 6, 7, 8, 9, 9, 9, 8, 7, 7, 6, 6, 6, 7, 7, 6, 5, 5, 5, 5, 5, 4, 4, 3, 2, 2, 2, 2, 1, 1, 2, 3, 4, 5, 5, 6, 6, 7, 7, 6, 6, 7, 7, 8, 8, 7, 6, 6, 6, 6, 6, 7, 7, 8, 8, 8, 8, 8, 8, 7, 7, 7,
-        8, 9, 9, 9, 9, 9, 8, 7, 6, 6, 6, 6, 6, 6, 6, 6, 5, 5, 6, 6, 6, 6, 7, 8, 8, 8, 7, 7, 7, 8, 8, 7, 7, 7, 7, 7, 7, 8, 8, 8, 9, 10, 10, 9, 9, 10, 10, 10, 11, 12, 12, 11, 11, 11, 11, 11, 11, 10, 10, 10, 9, 9, 8, 7, 7, 6, 5, 5, 5, 6, 6, 5, 5, 5, 6, 6, 6, 6, 6, 7, 7, 7, 8, 8, 9, 10, 10, 10, 11, 11, 10, 9, 9, 9, 9, 9, 10, 10, 9, 8, 8, 7, 7, 6, 6, 7, 8, 9, 10, 10, 10, 10, 10, 9, 9, 9, 9, 9, 10, 10, 10, 9, 8,
-        8, 9]
-
-#MC_x = [0, 1, 1, 1]
-#MC_y = [0, 0, 0, -1]
-#MC_z = [0, 0, 1, 1]
 
 
-def rotate_around_pivot(xyz, direction, pivot=[0, 0, 0]):
-    """Rotate a point around a given point.
+# these are the rotation operations at x,y,z axis in either pi/2, pi or pi/2*3
 
-    I call this the "high performance" version since we're caching some
-    values that are needed >1 time. It's less readable than the previous
-    function but it's faster.
-    """
-    x, y = xy
-    offset_x, offset_y = pivot
-    adjusted_x = x - offset_x
-    adjusted_y = y - offset_y
-
-    cos_rad = np.cos(radians)
-    sin_rad = np.sin(radians)
-
-    qx = offset_x + cos_rad * adjusted_x + sin_rad * adjusted_y
-    qy = offset_y + -sin_rad * adjusted_x + cos_rad * adjusted_y
-
-    return np.round([qx, qy])
+def Rx(point, pivot, quarterCircles=1):
+    x1, x2, x3 = point
+    p1, p2, p3 = pivot
+    if quarterCircles == 1:
+        return x1, -(x3-p3)+p2, (x2-p2)+p3
+    if quarterCircles == 2:
+        return x1, (x3-p3)+p2, -(x2-p2)+p3
+    if quarterCircles == 3:
+        return x1, -x2+2*p2, -x3+2*p3
 
 
-def rotate_along_pivot():
-    pass
+def Ry(point, pivot, quarterCircles=1):
+    x1, x2, x3 = point
+    p1, p2, p3 = pivot
+    if quarterCircles == 1:
+        return (x3-p3)+p1, x2, -(x1-p1)+p3
+    if quarterCircles == 2:
+        return -(x3-p3)+p1, x2, (x1-p1)+p3
+    if quarterCircles == 3:
+        return -x1+2*p1, x2, -x3+2*p3
+
+
+def Rz(point, pivot, quarterCircles=1):
+    x1, x2, x3 = point
+    p1, p2, p3 = pivot
+    if quarterCircles == 1:
+        return -(x2-p2)+p1, (x1-p1)+p2, x3
+    if quarterCircles == 2:
+        return (x2-p2)+p1, -(x1-p1)+p2, x3
+    if quarterCircles == 3:
+        return -x1+2*p1, -x2+2*p2, x3
 
 
 class PivotAlg:
@@ -51,30 +49,48 @@ class PivotAlg:
         self.pivot_point_traces = [np.array([0, 0, 0])]
         self.walklen = len(self.walk)
         self.rotation_traces = [0]
+        self.choices = [Rx, Ry, Rz]
+        self.end2end_distance = []
 
     def tryrotate(self):
-        direction = random.choice([1, 2, 3, 4])
-        pivot = random.randint(0, self.walklen)
-
+        # choose a random pivot point in (start, end) of the whole current walk:
+        pivot = random.randint(1, self.walklen-2)
         pivotPoint = self.walk_traces[-1][pivot]
-        Sub1_MC = self.walk_traces[-1][:pivot]
-        Sub2_MC = self.walk_traces[-1][pivot:]  # enthält den pivot point
 
-        # rotate randomly one subgroup:
-        Sub2_MC_prime = np.array(rotate_around_pivot(
-            Sub2_MC.T, direction=direction, pivot=pivotPoint)).T
+        # split the walk at the choosen pivot. Due symmetry, it does not depend which subpolymer we continue with
+        Sub1_MC = self.walk_traces[-1][:pivot]
+        Sub2_MC = self.walk_traces[-1][pivot:]
+
+        # now we determine, which axis are allowed to be rotated at
+        # meaning that we dont rotate at the axis parallel to the direction, the pivot anchor is pointing to
+        anchor = Sub1_MC[-1] - pivotPoint
+        choicesConfiguration = [i for i, j in zip(
+            self.choices, anchor) if j == 0]
+
+        axisRotation = random.choice(choicesConfiguration)
+
+        # choose, if we rotate counterclockwise or clockwise
+        quarterCircles = random.choice([1, 2, 3])
+
+        Sub2_MC_prime = np.array(axisRotation(
+            Sub2_MC.T, pivot=pivotPoint, quarterCircles=quarterCircles)).T
 
         c = 0
         for i in Sub1_MC:
             for j in Sub2_MC_prime:
                 if np.all(i - j == np.zeros(3)):
-                    print(f'rotation failed: {i}')
+                    #print(f'rotation failed: {i}')
+                    print('failed')
                     return
 
         if c == 0:
             self.walk_traces.append(np.append(Sub1_MC, Sub2_MC_prime, axis=0))
             self.pivot_point_traces.append(pivotPoint)
-            self.rotation_traces.append(direction)
+            # self.rotation_traces.append(direction)
+            d = self.walk_traces[-1][0]-self.walk_traces[-1][-1]
+            self.end2end_distance.append(np.sqrt(d[0]**2+d[1]**2+d[2]**2))
+            print(
+                f'number of different configurations: {len(self.walk_traces)-1} and polymer length: {self.walklen}')
 
     def getBounds(self):
         xmin, xmax, ymin, ymax, zmin, zmax = 0, 0, 0, 0, 0, 0
@@ -89,11 +105,13 @@ class PivotAlg:
 
             if xmin > xmin_:
                 xmin = xmin_
+
             if xmax < xmax_:
                 xmax = xmax_
 
             if ymin > ymin_:
                 ymin = ymin_
+
             if ymax < ymax_:
                 ymax = ymax_
 
@@ -106,24 +124,91 @@ class PivotAlg:
                    0.2, xmin-0.2, xmin-0.2, xmin-0.2, xmin-0.2]
         ybounds = [ymax+0.2, ymax+0.2, ymin-0.2, ymin -
                    0.2, ymax+0.2, ymax+0.2, ymin-0.2, ymin-0.2]
-        zbounds = [zmax+0.2, zmin-0.2, zmax+0.2, xmin -
-                   0.2, xmax+0.2, xmin-0.2, xmax+0.2, xmin-0.2]
+        #zbounds = [zmax+0.2, zmin-0.2, zmax+0.2, xmin - 0.2, xmax+0.2, xmin-0.2, xmax+0.2, xmin-0.2]
+        zbounds = [zmax+0.2, zmin-0.2, zmax+0.2, zmin -
+                   0.2, zmax+0.2, zmin-0.2, zmax+0.2, zmin-0.2]
 
         return xbounds, ybounds, zbounds
 
+    def forceN(self, n):
+        while len(self.walk_traces) < n+1:
+            self.tryrotate()
+
+    def savedistances2file(self, path='distances'):
+        np.savetxt(path, self.end2end_distance, delimiter=',')
+
     def plot(self):
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
+        bounds = self.getBounds()
+        for i in range(0, len(self.walk_traces)):
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
 
-        ax.plot(*self.walk.T)
-        ax.scatter(*self.walk.T, color='orange')
+            ax.plot(*self.walk_traces[i].T)
+            ax.scatter(*self.walk_traces[i].T, color='orange')
+            ax.scatter(*bounds)
+            ax.scatter(*self.pivot_point_traces[i], s=70, color='k')
 
-        plt.tight_layout()
-        ax.scatter(*self.getBounds())
-
+            plt.tight_layout()
         plt.show()
 
 
-MC_prev = np.array([MC_x, MC_y, MC_z]).T
-P = PivotAlg(MC_prev)
-P.plot()
+def rotateMazes():
+    paths = [i.replace('\\', '/') for i in glob.glob('MAZES/len*/*')]
+    for path in paths:
+        maze_len = int(path.split('/')[1].split('len')[-1])
+        name = path.split('/')[-1].split('.')[0]
+        if maze_len > 1001:
+            MC_prev = np.genfromtxt(path, unpack=True).T
+            P = PivotAlg(MC_prev)
+            P.forceN(50)
+            P.savedistances2file(path=f'distances/distances_{name}_{maze_len}')
+
+            data = np.genfromtxt(f'distances/distances_{name}_{maze_len}')
+            with open('distances.txt', 'a') as a:
+                a.write(f'{name},{np.mean(data)},{np.std(data)}\n')
+
+    todo = glob.glob('distances/*')
+    with open('distances.txt', 'a') as a:
+        for i in todo:
+            data = np.genfromtxt(i)
+            name = i.split('_')[-1]
+            a.write(f'{name},{np.mean(data)},{np.std(data)}\n')
+
+
+def Aufgabe():
+    def lin(x, a):
+        return a*x
+
+    N, M, S = np.genfromtxt(
+        'distances.txt', delimiter=',', unpack=True, skip_header=1)
+    x = np.log(N)
+    y = np.log(M)*2
+    s = np.log(S)
+
+    fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
+    xi = np.linspace(min(x), max(x), 51)
+
+    popt, pcov = curve_fit(lin, x, y, sigma=S)
+    perr = np.sqrt(np.diag(pcov))
+
+    ax1.errorbar(x=x, y=y, yerr=s, xerr=0, fmt='.')
+    ax1.plot(xi, lin(xi, *popt),
+             label=f'nu = {round(popt[0]/2,3)} +- {round(perr[0]/2,3)}')
+    ax2.plot(x, lin(x, *popt)-y, '.')
+
+    ax1.set_ylabel('ln(<Ree^2>)')
+    ax2.set_ylabel('residuals')
+    ax2.set_xlabel('ln(N)')
+
+    print(f'nu = {popt[0]/2} +- {perr[0]/2}')
+
+    ax1.grid()
+    ax2.grid()
+    ax1.legend()
+    plt.tight_layout()
+    plt.show()
+
+
+# rotateMazes()
+
+Aufgabe()

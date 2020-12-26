@@ -65,10 +65,6 @@ class PivotAlg:
             self.pivot_point_traces.append(pivotPoint)
             self.rotation_traces.append(t)
 
-    def forceN(self, n):
-        while len(self.walk_traces) < n+1:
-            self.tryrotate()
-
     def getBounds(self):
         xmin, xmax, ymin, ymax = 0, 0, 0, 0
 

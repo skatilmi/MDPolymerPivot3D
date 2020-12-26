@@ -3,19 +3,25 @@ import numpy as np
 import random
 import sys
 from mpl_toolkits.mplot3d import Axes3D
+import os
+
+
+def randomFileName():
+    s = 'MAZE_'
+    for i in range(20):
+        s += random.choice(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k',
+                            'l', 'm', 'n', 'o', 'p', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'])
+    return s+'.maze'
 
 
 class MonteCarlo:
     def __init__(self, seed=None, n=2):
-        '''
-        position as [x,y] while x,y are lists
-        '''
-
         self.n = n
         if seed == None:
-            random.seed(seed)
+            pass
         else:
             self.seed = seed
+            random.seed(seed)
         self.upperlimit = 0
         if self.n == 3:
             self.pos_trace = [[0, 0, 0]]
@@ -51,6 +57,9 @@ class MonteCarlo:
                 x0, y0 = self.pos_trace[-1]
                 self.pos_trace.append([x0+x1, y0+y1])
 
+    def getPathLen(self):
+        return len(self.pos_trace)
+
     def stepOnLatticeSAW(self, moves):
         if self.n == 2:
             for _ in range(moves):
@@ -59,7 +68,7 @@ class MonteCarlo:
                 for i in self.directions:
                     if [i[0]+x0, i[1]+y0] in self.pos_trace:
                         c += 1
-                if c == 4:
+                if c == 5:
                     self.upperlimit = _
                     break
                 contains = True
@@ -162,11 +171,26 @@ def sandbox(n):
         print(list(P.pos_trace[2]))
 
 
-sandbox(n=3)
+def findMazes(numMazes):
+    for i in range(numMazes):
+        P = MonteCarlo(n=3)
+        P.stepOnLatticeSAW(moves=5000)
+        try:
+            os.mkdir(f'MAZES/len{P.getPathLen()}')
+        except:
+            pass
 
-P = MonteCarlo(n=3, seed=None)
-P.stepOnLatticeSAW(moves=1000)
-P.plot()
+        np.savetxt(
+            f'MAZES/len{P.getPathLen()}/{randomFileName()}', P.pos_trace)
+
+
+findMazes(1000)
+
+# sandbox(n=3)
+#
+#P = MonteCarlo(n=3, seed=None)
+# P.stepOnLatticeSAW(moves=1000)
+# P.plot()
 
 
 def Aufgabe():
